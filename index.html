@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bunker Quote Benchmark — Geoquip Marine</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0d1117;--surface:#161b22;--surface2:#1c2330;--border:#2a3444;
+    --accent:#f0b429;--red:#f85149;--orange:#e3903a;--green:#3dd68c;--blue:#58a6ff;
+    --text:#e6edf3;--muted:#7d8590;
+    --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;}
+
+  /* HEADER */
+  .header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:stretch;justify-content:space-between;position:sticky;top:0;z-index:100;}
+  .brand{display:flex;align-items:center;gap:12px;padding:12px 0;}
+  .logo{width:32px;height:32px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:700;font-size:12px;color:#000;flex-shrink:0;}
+  .brand-title{font-size:14px;font-weight:500;}
+  .brand-sub{font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:1px;}
+  .tabs{display:flex;}
+  .tab{padding:0 20px;display:flex;align-items:center;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;}
+  .tab:hover{color:var(--text);}
+  .tab.on{color:var(--accent);border-bottom-color:var(--accent);}
+  .hdate{display:flex;align-items:center;font-family:var(--mono);font-size:11px;color:var(--muted);}
+
+  /* PAGES */
+  .page{display:none;max-width:1100px;margin:0 auto;padding:28px 22px;}
+  .page.on{display:block;}
+
+  /* LABELS */
+  .slabel{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;margin-bottom:10px;}
+
+  /* CARDS */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:16px;}
+
+  /* SUMMARY STRIP */
+  .sstrip{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:22px;}
+  .ss{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:13px 15px;}
+  .ss-l{font-size:10px;color:var(--muted);font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px;}
+  .ss-v{font-family:var(--mono);font-size:20px;font-weight:600;}
+  .ss-s{font-size:10px;color:var(--muted);margin-top:3px;}
+
+  /* INDEX GRID */
+  .igrid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:22px;}
+  .ictitle{font-size:12px;font-weight:500;display:flex;align-items:center;gap:6px;margin-bottom:9px;}
+  .ictitle span{font-family:var(--mono);font-size:10px;color:var(--muted);}
+  .irow{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+  .pinfo{font-size:10px;color:var(--blue);font-family:var(--mono);margin-top:7px;background:rgba(88,166,255,.06);border:1px solid rgba(88,166,255,.15);border-radius:3px;padding:5px 8px;line-height:1.5;}
+
+  /* INPUTS */
+  .ig{display:flex;flex-direction:column;gap:4px;}
+  .il{font-size:10px;color:var(--muted);font-family:var(--mono);}
+  input[type=number],input[type=text],select,textarea{background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:var(--mono);font-size:12px;padding:7px 9px;width:100%;outline:none;transition:border-color .15s;}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent);}
+  select option{background:var(--surface2);}
+
+  /* QUOTE ENTRY */
+  .qgrid{display:grid;grid-template-columns:2fr 1.6fr 1.1fr 1fr 1fr 1fr auto;gap:9px;align-items:end;margin-top:11px;}
+
+  /* BUTTONS */
+  .btn{background:var(--accent);color:#000;border:none;border-radius:4px;font-family:var(--mono);font-size:12px;font-weight:600;padding:7px 15px;cursor:pointer;white-space:nowrap;transition:opacity .15s;letter-spacing:.04em;}
+  .btn:hover{opacity:.85;}
+  .ghost{background:transparent;color:var(--text);border:1px solid var(--border);}
+  .ghost:hover{border-color:var(--accent);color:var(--accent);opacity:1;}
+  .bred{background:rgba(248,81,73,.1);color:var(--red);border:1px solid rgba(248,81,73,.3);}
+  .bred:hover{background:rgba(248,81,73,.2);opacity:1;}
+  .sm{padding:5px 10px;font-size:11px;}
+  .xbtn{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:4px;transition:color .15s;}
+  .xbtn:hover{color:var(--red);}
+
+  /* TABLES */
+  .twrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:12px;}
+  thead th{background:var(--surface2);color:var(--muted);font-family:var(--mono);font-size:9px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;padding:9px 10px;text-align:right;border-bottom:1px solid var(--border);white-space:nowrap;}
+  thead th.l{text-align:left;}
+  tbody tr{border-bottom:1px solid var(--border);transition:background .1s;}
+  tbody tr:hover{background:rgba(255,255,255,.02);}
+  tbody td{padding:11px 10px;font-family:var(--mono);font-size:11px;text-align:right;vertical-align:middle;}
+  tbody td.l{text-align:left;font-family:var(--sans);font-size:12px;}
+
+  /* BADGES */
+  .badge{display:inline-block;padding:2px 6px;border-radius:3px;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.05em;}
+  .br{background:rgba(248,81,73,.15);color:var(--red);}
+  .bo{background:rgba(227,144,58,.15);color:var(--orange);}
+  .bg{background:rgba(61,214,140,.15);color:var(--green);}
+  .bb{background:rgba(88,166,255,.15);color:var(--blue);}
+  .bap{background:rgba(61,214,140,.1);color:var(--green);border:1px solid rgba(61,214,140,.3);}
+  .bpe{background:rgba(240,180,41,.1);color:var(--accent);border:1px solid rgba(240,180,41,.3);}
+  .brj{background:rgba(248,81,73,.1);color:var(--red);border:1px solid rgba(248,81,73,.3);}
+
+  /* COLOURS */
+  .cr{color:var(--red);font-weight:600;}
+  .co{color:var(--orange);font-weight:600;}
+  .cg{color:var(--green);}
+
+  /* DOT */
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--muted);display:inline-block;margin-right:5px;}
+  .dot.on{background:var(--green);}
+
+  /* UPLOAD ZONE */
+  .uzn{border:1.5px dashed var(--border);border-radius:6px;padding:20px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;margin-bottom:20px;position:relative;}
+  .uzn:hover,.uzn.drag{border-color:var(--accent);background:rgba(240,180,41,.04);}
+  .uzn input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+
+  /* EMPTY */
+  .empty{text-align:center;padding:32px;color:var(--muted);font-size:13px;border:1px dashed var(--border);border-radius:6px;}
+
+  /* EMAIL */
+  .ebox{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:13px;font-family:var(--sans);font-size:12px;line-height:1.75;white-space:pre-wrap;color:var(--text);min-height:80px;}
+
+  /* FILTER CHIPS */
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:13px;}
+  .chip{padding:3px 11px;border-radius:20px;font-size:11px;font-family:var(--mono);cursor:pointer;border:1px solid var(--border);color:var(--muted);background:transparent;transition:all .15s;}
+  .chip.on{border-color:var(--accent);color:var(--accent);background:rgba(240,180,41,.08);}
+
+  /* TRACKER TOTALS BAR */
+  .tbar{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:13px 16px;display:flex;align-items:center;gap:28px;flex-wrap:wrap;margin-bottom:20px;}
+  .ti{display:flex;flex-direction:column;gap:3px;}
+  .ti-l{font-size:10px;color:var(--muted);font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;}
+  .ti-v{font-family:var(--mono);font-size:15px;font-weight:600;}
+
+  /* MODAL */
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center;}
+  .overlay.on{display:flex;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:22px;width:460px;max-width:95vw;}
+  .modal-title{font-size:14px;font-weight:600;margin-bottom:15px;}
+  .modal-actions{display:flex;gap:9px;margin-top:18px;justify-content:flex-end;}
+
+  /* PORT BANNER */
+  .pban{display:none;margin-top:9px;}
+
+  /* RESULT HIGHLIGHT */
+  .result-box{border:1px solid var(--border);border-radius:6px;padding:16px 20px;margin-bottom:22px;background:var(--surface);}
+  .result-main{font-family:var(--mono);font-size:28px;font-weight:600;margin-bottom:4px;}
+  .result-sub{font-size:12px;color:var(--muted);}
+
+  .div{border:none;border-top:1px solid var(--border);margin:22px 0;}
+  .row{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;}
+  .flex{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+
+  @media(max-width:900px){
+    .igrid{grid-template-columns:1fr 1fr;}
+    .qgrid{grid-template-columns:1fr 1fr;}
+    .sstrip{grid-template-columns:1fr 1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="brand">
+    <div class="logo">GQ</div>
+    <div><div class="brand-title">Bunker Benchmark</div><div class="brand-sub">Geoquip Marine Operations AG</div></div>
+  </div>
+  <div class="tabs">
+    <div class="tab on" onclick="nav('benchmark',this)">⚡ Benchmark</div>
+    <div class="tab" onclick="nav('history',this)">📋 History</div>
+    <div class="tab" onclick="nav('tracker',this)">📊 Overpayment Tracker</div>
+  </div>
+  <div class="hdate" id="hdate"></div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- PAGE: BENCHMARK                            -->
+<!-- ══════════════════════════════════════════ -->
+<div class="page on" id="pg-benchmark">
+
+  <!-- STEP 1: INDEX PRICES -->
+  <div class="slabel">Step 1 — Load Today's Bunker Index Prices</div>
+  <div class="uzn" id="uzn">
+    <input type="file" accept=".csv" id="csvin" onchange="loadCSV(event)">
+    <div style="font-size:22px;margin-bottom:5px">📥</div>
+    <div style="font-size:13px;font-weight:500;margin-bottom:3px">Drop Bunker Index CSV here or click to browse</div>
+    <div style="font-size:11px;color:var(--muted);font-family:var(--mono)">bunkerindex.com → Archive: Daily Prices → CSV button · Or enter manually below</div>
+  </div>
+
+  <div class="igrid">
+    <div class="card">
+      <div class="ictitle"><span class="dot" id="d-ams"></span>ARA / Netherlands <span>Amsterdam MGO</span></div>
+      <div class="irow">
+        <div class="ig"><div class="il">$/MT</div><input type="number" id="i-ams" placeholder="1265" oninput="recalc()"></div>
+        <div class="ig"><div class="il">Date</div><input type="text" id="id-ams" placeholder="25-Mar-2026"></div>
+      </div>
+      <div class="pinfo">Eemshaven · Den Helder · Beverwijk · IJmuiden · Amsterdam · Harlingen · Sluiskil · Rotterdam</div>
+    </div>
+    <div class="card">
+      <div class="ictitle"><span class="dot" id="d-skaw"></span>UK Ports <span>Skaw MGO</span></div>
+      <div class="irow">
+        <div class="ig"><div class="il">$/MT</div><input type="number" id="i-skaw" placeholder="1280" oninput="recalc()"></div>
+        <div class="ig"><div class="il">Date</div><input type="text" id="id-skaw" placeholder="25-Mar-2026"></div>
+      </div>
+      <div class="pinfo">Hull · Grimsby · Sunderland · Falmouth · Rostock</div>
+    </div>
+    <div class="card">
+      <div class="ictitle"><span class="dot" id="d-gdansk"></span>Baltic <span>Gdansk MGO</span></div>
+      <div class="irow">
+        <div class="ig"><div class="il">$/MT</div><input type="number" id="i-gdansk" placeholder="1250" oninput="recalc()"></div>
+        <div class="ig"><div class="il">Date</div><input type="text" id="id-gdansk" placeholder="25-Mar-2026"></div>
+      </div>
+      <div class="pinfo">Gdansk · Kiel Canal</div>
+    </div>
+    <div class="card">
+      <div class="ictitle"><span class="dot" id="d-ny"></span>US Ports <span>New York MGO</span></div>
+      <div class="irow">
+        <div class="ig"><div class="il">$/MT</div><input type="number" id="i-ny" placeholder="1300" oninput="recalc()"></div>
+        <div class="ig"><div class="il">Date</div><input type="text" id="id-ny" placeholder="25-Mar-2026"></div>
+      </div>
+      <div class="pinfo">New York · Newark · Staten Island · Providence</div>
+    </div>
+    <div class="card">
+      <div class="ictitle"><span class="dot" id="d-lp"></span>Las Palmas / Esbjerg <span>manual entry</span></div>
+      <div class="irow">
+        <div class="ig"><div class="il">Las Palmas $/MT</div><input type="number" id="i-lp" placeholder="1310" oninput="recalc()"></div>
+        <div class="ig"><div class="il">Esbjerg $/MT</div><input type="number" id="i-esb" placeholder="1290" oninput="recalc()"></div>
+      </div>
+      <div class="pinfo">Las Palmas · Esbjerg</div>
+    </div>
+    <div class="card">
+      <div class="ictitle"><span class="dot" id="d-pan"></span>Panama / Caribbean <span>Panama MGO</span></div>
+      <div class="irow">
+        <div class="ig"><div class="il">$/MT</div><input type="number" id="i-pan" placeholder="1295" oninput="recalc()"></div>
+        <div class="ig"><div class="il">Date</div><input type="text" id="id-pan" placeholder="25-Mar-2026"></div>
+      </div>
+      <div class="pinfo">Panama Canal · Balboa · Manzanillo · Trinidad</div>
+    </div>
+  </div>
+
+  <div class="div"></div>
+
+  <!-- STEP 2: QUOTE ENTRY -->
+  <div class="slabel">Step 2 — Enter Quote to Benchmark</div>
+  <div class="card" style="margin-bottom:22px">
+    <div class="qgrid">
+      <div class="ig"><div class="il">Vessel</div>
+        <select id="q-vessel">
+          <option value="">Select vessel…</option>
+          <option value="GEOQUIP SEEHORN">GEOQUIP SEEHORN</option>
+          <option value="GEOQUIP SAENTIS">GEOQUIP SAENTIS</option>
+          <option value="GEOQUIP SILVRETTA">GEOQUIP SILVRETTA</option>
+          <option value="GEOQUIP ELENA">GEOQUIP ELENA</option>
+          <option value="GEOQUIP SPEER">GEOQUIP SPEER</option>
+          <option value="DINA POLARIS">DINA POLARIS</option>
+        </select>
+      </div>
+      <div class="ig">
+        <div class="il">Port</div>
+        <select id="q-port" onchange="portBanner()">
+          <option value="">Select port…</option>
+          <optgroup label="Netherlands / ARA">
+            <option value="ams">Amsterdam</option><option value="ams">Beverwijk</option>
+            <option value="ams">Den Helder</option><option value="ams">Eemshaven</option>
+            <option value="ams">Harlingen</option><option value="ams">IJmuiden</option>
+            <option value="ams">Sluiskil</option><option value="ams">Reimerswaal</option>
+            <option value="ams">Rotterdam</option>
+          </optgroup>
+          <optgroup label="UK">
+            <option value="skaw">Hull</option><option value="skaw">Grimsby</option>
+            <option value="skaw">Sunderland</option><option value="skaw">Falmouth</option>
+          </optgroup>
+          <optgroup label="Baltic">
+            <option value="gdansk">Gdansk</option><option value="gdansk">Kiel Canal</option><option value="gdansk">Rostock</option>
+          </optgroup>
+          <optgroup label="US">
+            <option value="ny">New York</option><option value="ny">Newark</option>
+            <option value="ny">Staten Island</option><option value="ny">Providence</option>
+          </optgroup>
+          <optgroup label="Other">
+            <option value="lp">Las Palmas</option><option value="esb">Esbjerg</option>
+            <option value="pan">Panama Canal</option><option value="pan">Balboa</option>
+            <option value="pan">Trinidad</option><option value="pan">Manzanillo</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="ig"><div class="il">Supplier</div><input type="text" id="q-sup" placeholder="GAC"></div>
+      <div class="ig"><div class="il">Qty (CBM)</div><input type="number" id="q-cbm" placeholder="500"></div>
+      <div class="ig"><div class="il">Density (t/m³)</div><input type="number" id="q-den" value="0.845" step="0.001"></div>
+      <div class="ig"><div class="il">Quoted $/CBM</div><input type="number" id="q-pcbm" placeholder="1160"></div>
+      <button class="btn" onclick="addQ()">+ Add</button>
+    </div>
+    <div class="pban" id="pban"></div>
+  </div>
+
+  <!-- SESSION SUMMARY -->
+  <div class="sstrip" id="sstrip" style="display:none">
+    <div class="ss"><div class="ss-l">Quotes (Session)</div><div class="ss-v" id="sc-n">0</div></div>
+    <div class="ss"><div class="ss-l">Total Quoted Value</div><div class="ss-v" id="sc-tot">—</div></div>
+    <div class="ss"><div class="ss-l">Total Gap vs Index</div><div class="ss-v cr" id="sc-gap">—</div><div class="ss-s">raw $/USD</div></div>
+    <div class="ss"><div class="ss-l">Pending Approval</div><div class="ss-v" id="sc-pen">0</div></div>
+  </div>
+
+  <!-- SESSION RESULTS TABLE -->
+  <div class="row">
+    <div class="slabel" style="margin-bottom:0">Results — This Session</div>
+    <div class="flex">
+      <button class="btn ghost sm" id="ebtn" style="display:none" onclick="genEmail()">✉ Email Summary</button>
+      <button class="btn ghost sm" id="cbtn" style="display:none" onclick="clearSess()">Clear Session</button>
+    </div>
+  </div>
+
+  <div id="sempty" class="empty"><div style="font-size:20px;margin-bottom:6px">📋</div>No quotes yet — enter one above</div>
+  <div id="stbl" style="display:none" class="twrap">
+    <table>
+      <thead><tr>
+        <th class="l">Vessel</th>
+        <th class="l">Port</th>
+        <th class="l">Supplier</th>
+        <th>Qty CBM</th>
+        <th>Qty MT</th>
+        <th>Quoted $/CBM</th>
+        <th>Quoted $/MT</th>
+        <th>Index $/MT</th>
+        <th>Index Used</th>
+        <th>Gap $/MT</th>
+        <th>Gap Total $</th>
+        <th>Rating</th>
+        <th>Status</th>
+        <th></th>
+      </tr></thead>
+      <tbody id="stbody"></tbody>
+    </table>
+  </div>
+
+  <!-- EMAIL OUTPUT -->
+  <div id="esec" style="display:none;margin-top:22px">
+    <div class="div"></div>
+    <div class="row" style="margin-bottom:11px">
+      <div class="slabel" style="margin-bottom:0">Email Summary (editable)</div>
+      <div class="flex">
+        <button class="btn sm" onclick="copyEmail()">Copy</button>
+        <button class="btn ghost sm" onclick="document.getElementById('esec').style.display='none'">Close</button>
+      </div>
+    </div>
+    <div class="ebox" id="ebody" contenteditable="true"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- PAGE: HISTORY                              -->
+<!-- ══════════════════════════════════════════ -->
+<div class="page" id="pg-history">
+  <div class="row">
+    <div class="slabel" style="margin-bottom:0">All Saved Quotes</div>
+    <div class="flex">
+      <button class="btn ghost sm" onclick="exportCSV()">⬇ Export CSV</button>
+      <button class="btn bred sm" onclick="clearHist()">🗑 Clear All</button>
+    </div>
+  </div>
+  <div class="chips">
+    <button class="chip on" onclick="setF('all',this)">All</button>
+    <button class="chip" onclick="setF('pending',this)">⏳ Pending</button>
+    <button class="chip" onclick="setF('approved',this)">✅ Approved</button>
+    <button class="chip" onclick="setF('rejected',this)">❌ Rejected</button>
+  </div>
+  <div id="hempty" class="empty" style="display:none"><div style="font-size:20px;margin-bottom:6px">📂</div>No saved quotes yet</div>
+  <div id="htbl" class="twrap">
+    <table>
+      <thead><tr>
+        <th class="l">Date</th>
+        <th class="l">Vessel</th>
+        <th class="l">Port</th>
+        <th class="l">Supplier</th>
+        <th>Qty MT</th>
+        <th>Quoted $/MT</th>
+        <th>Index $/MT</th>
+        <th>Gap $/MT</th>
+        <th>Gap Total $</th>
+        <th>Status</th>
+        <th class="l">Notes</th>
+        <th></th>
+      </tr></thead>
+      <tbody id="hbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- PAGE: TRACKER                              -->
+<!-- ══════════════════════════════════════════ -->
+<div class="page" id="pg-tracker">
+  <div class="slabel">Cumulative Tracker — Approved Stems Only</div>
+  <div id="tempty" class="empty" style="display:none">
+    <div style="font-size:20px;margin-bottom:6px">📊</div>
+    No approved quotes yet — approve quotes in the History tab
+  </div>
+  <div id="tcont" style="display:none">
+    <div class="tbar" id="ttotals"></div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px">
+      <div>
+        <div class="slabel">By Supplier</div>
+        <div class="card twrap">
+          <table><thead><tr><th class="l">Supplier</th><th>Stems</th><th>Total MT</th><th>Avg Gap $/MT</th><th>Total Gap $</th></tr></thead>
+          <tbody id="bysup"></tbody></table>
+        </div>
+      </div>
+      <div>
+        <div class="slabel">By Port</div>
+        <div class="card twrap">
+          <table><thead><tr><th class="l">Port</th><th>Stems</th><th>Total MT</th><th>Avg Gap $/MT</th><th>Total Gap $</th></tr></thead>
+          <tbody id="byport"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:22px">
+      <div class="slabel">By Vessel</div>
+      <div class="card twrap">
+        <table><thead><tr><th class="l">Vessel</th><th>Stems</th><th>Total MT</th><th>Avg Gap $/MT</th><th>Total Gap $</th></tr></thead>
+        <tbody id="byves"></tbody></table>
+      </div>
+    </div>
+
+    <div class="slabel">All Approved Stems</div>
+    <div class="card twrap">
+      <table>
+        <thead><tr>
+          <th class="l">Date</th><th class="l">Vessel</th><th class="l">Port</th><th class="l">Supplier</th>
+          <th>Qty MT</th><th>Quoted $/MT</th><th>Index $/MT</th><th>Gap $/MT</th><th>Gap Total $</th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="modal">
+  <div class="modal">
+    <div class="modal-title" id="mtitle">Update Status</div>
+    <div class="ig" style="margin-bottom:11px">
+      <div class="il">Status</div>
+      <select id="mstat">
+        <option value="pending">⏳ Pending</option>
+        <option value="approved">✅ Approved</option>
+        <option value="rejected">❌ Rejected</option>
+      </select>
+    </div>
+    <div class="ig">
+      <div class="il">Notes (optional)</div>
+      <textarea id="mnotes" rows="3" placeholder="e.g. Approved — no alternative at this port on short notice"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost sm" onclick="closeM()">Cancel</button>
+      <button class="btn sm" onclick="saveM()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── STORAGE ────────────────────────────────────────────────────
+const SK = 'gq_bunk_v4';
+function ld() { try { return JSON.parse(localStorage.getItem(SK)) || []; } catch { return []; } }
+function sv(h) { try { localStorage.setItem(SK, JSON.stringify(h)); } catch(e) { console.warn(e); } }
+
+// ─── STATE ──────────────────────────────────────────────────────
+let sess = [], hfilt = 'all', mId = null;
+const now = new Date();
+document.getElementById('hdate').textContent =
+  now.toLocaleDateString('en-GB', {weekday:'short', day:'numeric', month:'short', year:'numeric'});
+
+// ─── NAVIGATION ─────────────────────────────────────────────────
+function nav(p, el) {
+  document.querySelectorAll('.page').forEach(x => x.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+  document.getElementById('pg-' + p).classList.add('on');
+  el.classList.add('on');
+  if (p === 'history') renderH();
+  if (p === 'tracker') renderT();
+}
+
+// ─── PORT → INDEX MAPPING ────────────────────────────────────────
+const PM = {
+  ams:    { lbl: 'Amsterdam MGO',   key: 'ams'    },
+  skaw:   { lbl: 'Skaw MGO',        key: 'skaw'   },
+  gdansk: { lbl: 'Gdansk MGO',      key: 'gdansk' },
+  ny:     { lbl: 'New York MGO',    key: 'ny'     },
+  lp:     { lbl: 'Las Palmas MGO',  key: 'lp'     },
+  esb:    { lbl: 'Esbjerg MGO',     key: 'esb'    },
+  pan:    { lbl: 'Panama MGO',      key: 'pan'    },
+};
+const IK = { ams:'i-ams', skaw:'i-skaw', gdansk:'i-gdansk', ny:'i-ny', lp:'i-lp', esb:'i-esb', pan:'i-pan' };
+
+function gidx(k) {
+  const v = parseFloat(document.getElementById(IK[k])?.value);
+  return isNaN(v) ? null : v;
+}
+
+// ─── PORT BANNER ─────────────────────────────────────────────────
+function portBanner() {
+  const sel = document.getElementById('q-port'), k = sel.value;
+  const ban = document.getElementById('pban');
+  if (!k) { ban.style.display = 'none'; return; }
+  const info = PM[k], idx = gidx(k);
+  const pn = sel.options[sel.selectedIndex].text;
+  ban.style.display = 'block';
+  ban.innerHTML = `<div class="pinfo">📍 <strong>${pn}</strong> benchmarks against <strong>${info.lbl}</strong>${idx
+    ? ` — currently <strong>$${idx.toLocaleString()}/MT</strong>`
+    : ' — <span style="color:var(--orange)">not entered yet (Step 1)</span>'}</div>`;
+}
+
+// ─── CALCULATE ONE QUOTE ─────────────────────────────────────────
+function calc(q) {
+  const mt = q.cbm * q.den;
+  const pmt = q.pcbm / q.den;
+  const info = PM[q.pk] || {};
+  const idx = gidx(q.pk);
+  const gap_mt = idx !== null ? pmt - idx : null;
+  const gap_usd = gap_mt !== null ? gap_mt * mt : null;
+  return { ...q, mt, pmt, idx, idxlbl: info.lbl || '', gap_mt, gap_usd, tot: q.pcbm * q.cbm };
+}
+
+// ─── ADD QUOTE ───────────────────────────────────────────────────
+function addQ() {
+  const vessel = document.getElementById('q-vessel').value.trim();
+  const sel    = document.getElementById('q-port');
+  const pk     = sel.value;
+  const pn     = sel.options[sel.selectedIndex]?.text || '';
+  const sup    = document.getElementById('q-sup').value.trim();
+  const cbm    = parseFloat(document.getElementById('q-cbm').value);
+  const den    = parseFloat(document.getElementById('q-den').value) || 0.845;
+  const pcbm   = parseFloat(document.getElementById('q-pcbm').value);
+
+  if (!vessel || !pk || !cbm || !pcbm) {
+    alert('Please fill in: Vessel, Port, Qty (CBM) and Quoted $/CBM.');
+    return;
+  }
+
+  const q = calc({
+    id: Date.now(), vessel, pk, pn, sup, cbm, den, pcbm,
+    date: now.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}),
+    idxdate: document.getElementById('id-ams').value || now.toLocaleDateString('en-GB'),
+    status: 'pending', notes: ''
+  });
+
+  sess.push(q);
+  const h = ld(); h.unshift(q); sv(h);
+  renderS();
+
+  ['q-sup','q-cbm','q-pcbm'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('q-vessel').value = '';
+  document.getElementById('q-port').value = '';
+  document.getElementById('q-den').value = '0.845';
+  document.getElementById('pban').style.display = 'none';
+}
+
+// ─── HELPERS ─────────────────────────────────────────────────────
+function f(n, d=0) {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  return n.toLocaleString('en-US', {minimumFractionDigits:d, maximumFractionDigits:d});
+}
+function rtg(g) {
+  if (g === null) return { l:'N/A', c:'' };
+  if (g > 100)  return { l:'🔴 HIGH',   c:'br' };
+  if (g > 30)   return { l:'🟠 ABOVE',  c:'bo' };
+  if (g >= -30) return { l:'🟢 FAIR',   c:'bg' };
+  return { l:'🔵 BELOW', c:'bb' };
+}
+function gc(v) {
+  if (v === null) return '';
+  if (v > 100) return 'cr';
+  if (v > 30)  return 'co';
+  return 'cg';
+}
+function sb(s) {
+  if (s === 'approved') return '<span class="badge bap">✅ Approved</span>';
+  if (s === 'rejected') return '<span class="badge brj">❌ Rejected</span>';
+  return '<span class="badge bpe">⏳ Pending</span>';
+}
+
+// ─── RENDER SESSION TABLE ────────────────────────────────────────
+function renderS() {
+  const se = document.getElementById('sempty');
+  const st = document.getElementById('stbl');
+  const sc = document.getElementById('sstrip');
+
+  if (!sess.length) {
+    se.style.display = 'block'; st.style.display = 'none'; sc.style.display = 'none';
+    document.getElementById('ebtn').style.display = 'none';
+    document.getElementById('cbtn').style.display = 'none';
+    return;
+  }
+  se.style.display = 'none'; st.style.display = 'block'; sc.style.display = 'grid';
+  document.getElementById('ebtn').style.display = 'inline-block';
+  document.getElementById('cbtn').style.display = 'inline-block';
+
+  // Summary strip
+  const tv   = sess.reduce((s,q) => s + q.tot, 0);
+  const tgap = sess.filter(q => q.gap_usd !== null).reduce((s,q) => s + q.gap_usd, 0);
+  const pen  = sess.filter(q => q.status === 'pending').length;
+  document.getElementById('sc-n').textContent   = sess.length;
+  document.getElementById('sc-tot').textContent = '$' + f(tv, 0);
+  document.getElementById('sc-gap').textContent = (tgap > 0 ? '+$' : '$') + f(Math.abs(tgap), 0);
+  document.getElementById('sc-pen').textContent = pen;
+
+  // Table
+  const tb = document.getElementById('stbody'); tb.innerHTML = '';
+  sess.forEach(q => {
+    const r = rtg(q.gap_mt), gclass = gc(q.gap_mt);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="l">${q.vessel}</td>
+      <td class="l">${q.pn}</td>
+      <td class="l">${q.sup || '—'}</td>
+      <td>${f(q.cbm, 1)}</td>
+      <td>${f(q.mt, 1)}</td>
+      <td>$${f(q.pcbm, 2)}</td>
+      <td>$${f(q.pmt, 1)}</td>
+      <td>${q.idx ? '$' + f(q.idx, 1) : '<span style="color:var(--orange)">not loaded</span>'}</td>
+      <td style="font-size:10px;color:var(--muted)">${q.idxlbl}</td>
+      <td class="${gclass}" style="font-weight:600">${q.gap_mt !== null ? (q.gap_mt > 0 ? '+' : '') + f(q.gap_mt, 1) : '—'}</td>
+      <td class="${gclass}" style="font-weight:700;font-size:13px">${q.gap_usd !== null ? (q.gap_usd > 0 ? '+$' : '$') + f(Math.abs(q.gap_usd), 0) : '—'}</td>
+      <td><span class="badge ${r.c}">${r.l}</span></td>
+      <td>${sb(q.status)} <button class="btn ghost sm" style="font-size:10px;margin-left:4px" onclick="openM(${q.id})">Edit</button></td>
+      <td><button class="xbtn" onclick="remS(${q.id})">✕</button></td>
+    `;
+    tb.appendChild(tr);
+  });
+}
+
+function remS(id) { sess = sess.filter(q => q.id !== id); renderS(); }
+function clearSess() {
+  if (!confirm('Clear session? Quotes stay in History.')) return;
+  sess = []; renderS();
+  document.getElementById('esec').style.display = 'none';
+}
+
+// ─── RECALC ON INDEX CHANGE ──────────────────────────────────────
+function recalc() {
+  ['ams','skaw','gdansk','ny','lp','pan'].forEach(k => {
+    const d = document.getElementById('d-' + k);
+    if (d) d.className = 'dot' + (gidx(k) ? ' on' : '');
+  });
+  portBanner();
+  sess = sess.map(q => calc(q));
+  renderS();
+}
+
+// ─── MODAL ───────────────────────────────────────────────────────
+function openM(id) {
+  mId = id;
+  const h = ld(), q = h.find(x => x.id === id) || sess.find(x => x.id === id);
+  if (!q) return;
+  document.getElementById('mtitle').textContent = `${q.vessel} / ${q.pn}`;
+  document.getElementById('mstat').value  = q.status || 'pending';
+  document.getElementById('mnotes').value = q.notes  || '';
+  document.getElementById('modal').classList.add('on');
+}
+function closeM() { document.getElementById('modal').classList.remove('on'); mId = null; }
+function saveM() {
+  const status = document.getElementById('mstat').value;
+  const notes  = document.getElementById('mnotes').value;
+  const h = ld(), hi = h.findIndex(x => x.id === mId);
+  if (hi >= 0) { h[hi].status = status; h[hi].notes = notes; sv(h); }
+  const si = sess.findIndex(x => x.id === mId);
+  if (si >= 0) { sess[si].status = status; sess[si].notes = notes; }
+  closeM(); renderS();
+  if (document.getElementById('pg-history').classList.contains('on')) renderH();
+  if (document.getElementById('pg-tracker').classList.contains('on')) renderT();
+}
+
+// ─── HISTORY PAGE ────────────────────────────────────────────────
+function setF(f2, el) {
+  hfilt = f2;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+  renderH();
+}
+
+function renderH() {
+  let h = ld();
+  if (hfilt !== 'all') h = h.filter(q => q.status === hfilt);
+  const he = document.getElementById('hempty'), hw = document.getElementById('htbl');
+  if (!h.length) { he.style.display = 'block'; hw.style.display = 'none'; return; }
+  he.style.display = 'none'; hw.style.display = 'block';
+  const tb = document.getElementById('hbody'); tb.innerHTML = '';
+  h.forEach(q => {
+    const gclass = gc(q.gap_mt), tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="l" style="font-size:10px;color:var(--muted)">${q.date || '—'}</td>
+      <td class="l">${q.vessel}</td>
+      <td class="l">${q.pn}</td>
+      <td class="l">${q.sup || '—'}</td>
+      <td>${f(q.mt, 1)}</td>
+      <td>$${f(q.pmt, 1)}</td>
+      <td>${q.idx ? '$' + f(q.idx, 1) : '—'}</td>
+      <td class="${gclass}">${q.gap_mt !== null ? (q.gap_mt > 0 ? '+' : '') + f(q.gap_mt, 1) : '—'}</td>
+      <td class="${gclass}" style="font-weight:600">${q.gap_usd !== null ? (q.gap_usd > 0 ? '+$' : '$') + f(Math.abs(q.gap_usd), 0) : '—'}</td>
+      <td>${sb(q.status)}</td>
+      <td class="l" style="font-size:10px;color:var(--muted);max-width:160px;white-space:normal">${q.notes || ''}</td>
+      <td>
+        <button class="btn ghost sm" style="font-size:10px" onclick="openM(${q.id})">Edit</button>
+        <button class="xbtn" onclick="delH(${q.id})">✕</button>
+      </td>
+    `;
+    tb.appendChild(tr);
+  });
+}
+
+function delH(id) {
+  if (!confirm('Remove from history?')) return;
+  sv(ld().filter(q => q.id !== id)); renderH();
+}
+function clearHist() {
+  if (!confirm('Delete ALL history? This cannot be undone.')) return;
+  sv([]); renderH();
+}
+
+// ─── TRACKER PAGE ────────────────────────────────────────────────
+function renderT() {
+  const all = ld().filter(q => q.status === 'approved' && q.gap_usd !== null);
+  const te = document.getElementById('tempty'), tc = document.getElementById('tcont');
+  if (!all.length) { te.style.display = 'block'; tc.style.display = 'none'; return; }
+  te.style.display = 'none'; tc.style.display = 'block';
+
+  const tmt  = all.reduce((s,q) => s + q.mt, 0);
+  const tgap = all.reduce((s,q) => s + q.gap_usd, 0);
+  const tval = all.reduce((s,q) => s + q.tot, 0);
+  const avg  = tmt > 0 ? all.reduce((s,q) => s + q.gap_mt * q.mt, 0) / tmt : 0;
+
+  document.getElementById('ttotals').innerHTML = `
+    <div class="ti"><div class="ti-l">Approved Stems</div><div class="ti-v">${all.length}</div></div>
+    <div class="ti"><div class="ti-l">Total Volume MT</div><div class="ti-v">${f(tmt, 1)}</div></div>
+    <div class="ti"><div class="ti-l">Total Quoted Value</div><div class="ti-v">$${f(tval, 0)}</div></div>
+    <div class="ti"><div class="ti-l">Avg Gap vs Index</div><div class="ti-v ${avg > 0 ? 'cr' : 'cg'}">${avg > 0 ? '+' : ''}${f(avg, 1)}/MT</div></div>
+    <div class="ti"><div class="ti-l">Total Gap vs Index</div><div class="ti-v cr">$${f(Math.abs(tgap), 0)}</div></div>
+  `;
+
+  const grp = (key, tbId) => {
+    const m = {};
+    all.forEach(q => {
+      const k = q[key] || 'Unknown';
+      if (!m[k]) m[k] = { l:k, n:0, mt:0, gap:0 };
+      m[k].n++; m[k].mt += q.mt; m[k].gap += q.gap_usd;
+    });
+    const tb2 = document.getElementById(tbId); tb2.innerHTML = '';
+    Object.values(m).sort((a,b) => b.gap - a.gap).forEach(r => {
+      const ag = r.mt > 0 ? r.gap / r.mt : 0;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="l">${r.l}</td><td>${r.n}</td><td>${f(r.mt, 1)}</td>
+        <td class="${ag > 0 ? 'cr' : 'cg'}">${ag > 0 ? '+' : ''}${f(ag, 1)}</td>
+        <td class="${r.gap > 0 ? 'cr' : 'cg'}" style="font-weight:600">${r.gap > 0 ? '+$' : '$'}${f(Math.abs(r.gap), 0)}</td>
+      `;
+      tb2.appendChild(tr);
+    });
+  };
+  grp('sup', 'bysup');
+  grp('pn',  'byport');
+  grp('vessel', 'byves');
+
+  const tb = document.getElementById('tbody'); tb.innerHTML = '';
+  all.forEach(q => {
+    const gclass = gc(q.gap_mt), tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="l" style="font-size:10px;color:var(--muted)">${q.date || '—'}</td>
+      <td class="l">${q.vessel}</td><td class="l">${q.pn}</td><td class="l">${q.sup || '—'}</td>
+      <td>${f(q.mt, 1)}</td>
+      <td>$${f(q.pmt, 1)}</td>
+      <td>${q.idx ? '$' + f(q.idx, 1) : '—'}</td>
+      <td class="${gclass}">${q.gap_mt !== null ? (q.gap_mt > 0 ? '+' : '') + f(q.gap_mt, 1) : '—'}</td>
+      <td class="${gclass}" style="font-weight:600">${q.gap_usd !== null ? (q.gap_usd > 0 ? '+$' : '$') + f(Math.abs(q.gap_usd), 0) : '—'}</td>
+    `;
+    tb.appendChild(tr);
+  });
+}
+
+// ─── EMAIL ───────────────────────────────────────────────────────
+function genEmail() {
+  if (!sess.length) return;
+  const idate = document.getElementById('id-ams').value || now.toLocaleDateString('en-GB');
+  let L = [];
+  L.push(`Hi,\n\nBenchmark analysis — ${idate}.\n`);
+  sess.forEach((q, i) => {
+    L.push(`${'─'.repeat(56)}`);
+    L.push(`Nomination ${i+1}: ${q.vessel} / ${q.pn}${q.sup ? ' — ' + q.sup : ''}`);
+    L.push(`${'─'.repeat(56)}`);
+    L.push(`Quoted:     $${f(q.pcbm, 2)}/CBM  ($${f(q.pmt, 1)}/MT)`);
+    L.push(`Quantity:   ${f(q.cbm, 1)} CBM  (~${f(q.mt, 1)} MT)`);
+    L.push(`Total:      $${f(q.tot, 0)}`);
+    if (q.idx) {
+      L.push(`\nIndex:      ${q.idxlbl} = $${f(q.idx, 1)}/MT`);
+      L.push(`Gap:        ${q.gap_mt > 0 ? '+' : ''}$${f(q.gap_mt, 1)}/MT  →  ${q.gap_usd > 0 ? '+$' : '$'}${f(Math.abs(q.gap_usd), 0)} on this stem`);
+      L.push(`Rating:     ${rtg(q.gap_mt).l.replace(/[🔴🟠🟢🔵]/g,'').trim()}`);
+    } else {
+      L.push(`\n⚠ Index price not loaded for this port.`);
+    }
+    L.push('');
+  });
+  const tgap = sess.filter(q => q.gap_usd !== null).reduce((s,q) => s + q.gap_usd, 0);
+  if (sess.length > 1) {
+    L.push(`${'═'.repeat(56)}`);
+    L.push(`TOTAL GAP VS INDEX (all nominations): $${f(Math.abs(tgap), 0)}`);
+    L.push(`${'═'.repeat(56)}\n`);
+  }
+  L.push(`Index: Bunker Index (bunkerindex.com) — raw price comparison, no adjustments applied.\n\nBest regards,`);
+  document.getElementById('ebody').textContent = L.join('\n');
+  const es = document.getElementById('esec');
+  es.style.display = 'block';
+  es.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function copyEmail() {
+  navigator.clipboard.writeText(document.getElementById('ebody').textContent).then(() => {
+    const btn = event.target;
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+
+// ─── EXPORT CSV ──────────────────────────────────────────────────
+function exportCSV() {
+  const h = ld();
+  if (!h.length) { alert('No history to export.'); return; }
+  const cols = ['date','vessel','pn','sup','cbm','mt','pcbm','pmt','idx','idxlbl','gap_mt','gap_usd','tot','status','notes'];
+  const rows = h.map(q => cols.map(c => {
+    const v = q[c];
+    if (v === null || v === undefined) return '';
+    if (typeof v === 'string' && v.includes(',')) return `"${v}"`;
+    return v;
+  }).join(','));
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent([cols.join(','), ...rows].join('\n'));
+  a.download = `gq_bunker_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+// ─── CSV IMPORT ──────────────────────────────────────────────────
+function loadCSV(ev) {
+  const file = ev.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const lines = e.target.result.split('\n').filter(l => l.trim());
+    const fn = file.name.toLowerCase();
+    let tid = null;
+    if (fn.includes('amsterdam') || fn.includes('ams')) tid = 'i-ams';
+    else if (fn.includes('skaw'))                       tid = 'i-skaw';
+    else if (fn.includes('gdansk'))                     tid = 'i-gdansk';
+    else if (fn.includes('new_york') || fn.includes('newyork') || fn.includes('ny')) tid = 'i-ny';
+    let ok = 0;
+    for (let i = 1; i < lines.length; i++) {
+      const c = lines[i].split(',').map(x => x.trim().replace(/"/g,''));
+      const p = parseFloat(c[1]);
+      if (!isNaN(p) && p > 100 && tid) {
+        document.getElementById(tid).value = p;
+        const de = document.getElementById(tid.replace('i-','id-'));
+        if (de) de.value = c[0];
+        ok++; break;
+      }
+    }
+    recalc();
+    if (!ok) alert('Could not parse CSV — check it is a Bunker Index price export.');
+    else alert(`✓ Loaded: ${file.name}`);
+  };
+  reader.readAsText(file);
+}
+
+// Drag & drop
+const uzn = document.getElementById('uzn');
+uzn.addEventListener('dragover', e => { e.preventDefault(); uzn.classList.add('drag'); });
+uzn.addEventListener('dragleave', () => uzn.classList.remove('drag'));
+uzn.addEventListener('drop', e => {
+  e.preventDefault(); uzn.classList.remove('drag');
+  const f2 = e.dataTransfer.files[0];
+  if (f2) loadCSV({ target: { files: [f2] } });
+});
+</script>
+</body>
+</html>
